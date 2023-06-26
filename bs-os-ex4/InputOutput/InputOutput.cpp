@@ -126,7 +126,7 @@ int main()
 	ghInputEvent = OpenEvent(EVENT_ALL_ACCESS | EVENT_MODIFY_STATE, FALSE, L"InputEvent");
 
 	if (ghInputEvent == NULL) {
-		printf("%s: Error opening event %s! Hit any key...\n\n", MYNAME, L"InputEvent");
+		printf("%s: Error opening event %s! Hit any key...\n\n", MYNAME, "InputEvent");
 		_getch();
 		return 1;
 	}
@@ -135,7 +135,7 @@ int main()
 	ghOutputEvent = OpenEvent(EVENT_ALL_ACCESS | EVENT_MODIFY_STATE, FALSE, L"OutputEvent");
 
 	if (ghOutputEvent == NULL) {
-		printf("%s: Error opening event %s! Hit any key...\n\n", MYNAME, L"OutputEvent");
+		printf("%s: Error opening event %s! Hit any key...\n\n", MYNAME, "OutputEvent");
 		_getch();
 		return 1;
 	}
@@ -393,7 +393,7 @@ int _stdcall IrqCallback(int iDevice, int iSubdevice, int iChannel,
 	if (iErrorCode == ME_ERRNO_SUCCESS)
 	{
 		//printf("Interrupt: IRQ Count: %d  Value: %d\n", iIrqCount, iValue);
-		SetEvent( ... );
+		SetEvent(ghInputEvent);
 
 	}
 	else
@@ -401,7 +401,7 @@ int _stdcall IrqCallback(int iDevice, int iSubdevice, int iChannel,
 		if (!SetEvent(ghExitEvent))
 		{
 			printf("%s: Error %d SetEvent()\n", MYNAME, GetLastError());
-			bContinue = FALSE;
+			bContinue = FALSE; // or should it SetEvent(ghExitEvent)?
 		}
 		printf("****    IrqCallback - Error: %d    ****\n\n", iErrorCode);
 	}

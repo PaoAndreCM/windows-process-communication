@@ -19,10 +19,24 @@ DWORD WINAPI Processing(LPVOID);
 int main()
 {
 	//handles for process and threads
-	..
+	HANDLE hProcess = GetCurrentProcess();
+	HANDLE hThread = GetCurrentThread();
 
 	//set priority and processors
-	...
+	int threadPriority = THREAD_PRIORITY_NORMAL;
+	DWORD processAffinityMask = 0x00000001;
+
+	// Set the thread priority
+	if (!SetThreadPriority(hThread, threadPriority))
+	{
+		printf("%s: Failed to set thread priority. Error code: %d\n", MYNAME, GetLastError());
+	}
+
+	// Set the process affinity mask
+	if (!SetProcessAffinityMask(hProcess, processAffinityMask))
+	{
+		printf("%s: Failed to set process affinity mask. Error code: %d\n", MYNAME, GetLastError());
+	}
 	/*
 		15
 		THREAD_PRIORITY_TIME_CRITICAL, Base priority of 15 for IDLE_PRIORITY_CLASS, BELOW_NORMAL_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS, ABOVE_NORMAL_PRIORITY_CLASS, or HIGH_PRIORITY_CLASS processes, and a base priority of 31 for REALTIME_PRIORITY_CLASS processes.
@@ -40,7 +54,7 @@ int main()
 		THREAD_PRIORITY_IDLE, Base priority of 1 for IDLE_PRIORITY_CLASS, BELOW_NORMAL_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS, ABOVE_NORMAL_PRIORITY_CLASS, or HIGH_PRIORITY_CLASS processes, and a base priority of 16 for REALTIME_PRIORITY_CLASS processes.
 	*/
 
-	...
+	
 	/*
 		The SetProcessAffinityMask is inherted to any child process (and threads).
 		The SetThreadAffinityMask in threads will be overwritten by this call
@@ -55,14 +69,14 @@ int main()
 	*/
 
 	//get info
-	int processid = ...
-	int threadid = ...
-	int processornum = ...
-	DWORD ppriority = ...
-	int tpriority = ...
+	int processid = GetCurrentProcessId();
+	int threadid = GetCurrentThreadId();
+	int processornum = GetCurrentProcessorNumber();
+	DWORD ppriority = GetPriorityClass(hProcess);
+	int tpriority = GetThreadPriority(hThread);
 
-	std::cout << "Process ID: " << ... << "\nThread ID: " << ... << "\nNow running on processor #" << ...
-	<< "\nWith process priority class 0x" << std::hex << ... << "\nWith thread priority " << ... << std::dec << std::endl;
+	std::cout << "Process ID: " << processid << "\nThread ID: " << threadid << "\nNow running on processor #" << processornum
+	<< "\nWith process priority class 0x" << std::hex << ppriority << "\nWith thread priority " << tpriority << std::dec << std::endl;
 
 
 	DWORD dwEvent;
@@ -70,17 +84,21 @@ int main()
 	volatile int vi, i;
 
 	// open StartProcessingEvent:
-	...
+	ghStartProcessingEvent = OpenEvent(EVENT_ALL_ACCESS | EVENT_MODIFY_STATE, FALSE, L"StartProcessingEvent");
 
-	if (...) {
-		...
+	if (ghStartProcessingEvent == NULL) {
+		printf("%s: Error opening event %s! Hit any key...\n\n", MYNAME, "StartProcessingEvent");
+		_getch();
+		return 1;
 	}
 
 	// open ProcessingFinishedEvent:
-	...
+	ghProcessingFinishedEvent = OpenEvent(EVENT_ALL_ACCESS | EVENT_MODIFY_STATE, FALSE, L"ProcessingFinishedEvent");
 
-	if (...) {
-		...
+	if (ghProcessingFinishedEvent == NULL) {
+		printf("%s: Error opening event %s! Hit any key...\n\n", MYNAME, "ProcessingFinishedEvent");
+		_getch();
+		return 1;
 	}
 
 	// open quit event:
@@ -93,7 +111,7 @@ int main()
 	}
 
 	// wait for events raised by Control) or the quit event (may be set by every participant):
-	HANDLE ghEvents[] = { ... }; // array of handles
+	HANDLE ghEvents[] = { ghStartProcessingEvent, ghExitEvent }; // array of handles
 	int nNumEvents = sizeof(ghEvents) / sizeof(ghEvents[0]);
 
 	printf("%s process is running.\n", MYNAME);
@@ -112,7 +130,10 @@ int main()
 				for (i = 0; i < 9000000; i++) { vi = i % 2; }
 
 				// Set ProcessingFinishedEvent
-				...
+				if (!SetEvent(ghProcessingFinishedEvent)) {
+					printf("%s: Error %d SetEvent()\n", MYNAME, GetLastError());
+					bContinue = FALSE;
+				}
 				break;
 		case WAIT_OBJECT_0 + 1: // ExitEvent
 			bContinue = FALSE;
