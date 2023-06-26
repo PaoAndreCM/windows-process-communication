@@ -129,7 +129,7 @@ int main()
 		NULL,						// default security attributes
 		FALSE,						// auto-reset event object
 		FALSE,						// initial state: nonsignaled
-		L"ProcessingFinishedEvent");	// name of the event to adress from other processes
+		L"OutputEvent");	// name of the event to adress from other processes
 
 	if (ghOutputEvent == NULL)
 	{
