@@ -37,7 +37,7 @@ extern "C"
 #define MYNAME "InputOutput"
 
 // Create handles for each event
-HANDLE ...
+HANDLE ghInputEvent = 0, ghOutputEvent = 0, ghExitEvent = 0;
 BOOL bContinue = TRUE;
 
 // Forward declaration for callback function on MEids
@@ -123,17 +123,21 @@ int main()
 
 
 	// open InputEvent:
-	...
+	ghInputEvent = OpenEvent(EVENT_ALL_ACCESS | EVENT_MODIFY_STATE, FALSE, L"InputEvent");
 
-	if (...) {
-		...
+	if (ghInputEvent == NULL) {
+		printf("%s: Error opening event %s! Hit any key...\n\n", MYNAME, L"InputEvent");
+		_getch();
+		return 1;
 	}
 
 	// open OutputEvent:
-	...
+	ghOutputEvent = OpenEvent(EVENT_ALL_ACCESS | EVENT_MODIFY_STATE, FALSE, L"OutputEvent");
 
-	if (...) {
-		...
+	if (ghOutputEvent == NULL) {
+		printf("%s: Error opening event %s! Hit any key...\n\n", MYNAME, L"OutputEvent");
+		_getch();
+		return 1;
 	}
 
 	// open quit event:
@@ -265,7 +269,7 @@ int main()
 
 
 	// wait for StartProcessing command (raised by the ececution control) or the quit event (may be set by every participant):
-	HANDLE ghEvents[] = { ... }; // array of handles
+	HANDLE ghEvents[] = { ghOutputEvent, ghExitEvent }; // array of handles
 	int nNumEvents = sizeof(ghEvents) / sizeof(ghEvents[0]);
 
 	printf("%s process is running.\n", MYNAME);

@@ -74,7 +74,7 @@ int main()
 	int processid = GetCurrentProcessId();
 	int threadid = GetCurrentThreadId();
 	int processornum = GetCurrentProcessorNumber();
-	int ppriority = GetPriorityClass(hProcess);
+	DWORD ppriority = GetPriorityClass(hProcess);
 	int tpriority = GetThreadPriority(hThread);
 
 	std::cout << "Process ID: " << processid << "\nThread ID: " << threadid << "\nNow running on processor #" << processornum
