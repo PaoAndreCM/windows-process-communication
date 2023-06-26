@@ -59,10 +59,24 @@ int i_me_error;
 int main()
 {
 	//handles for process and threads
-	...
+	HANDLE hProcess = GetCurrentProcess();
+	HANDLE hThread = GetCurrentThread();
 
 	//set priority and processors
-	...
+	int threadPriority = THREAD_PRIORITY_NORMAL;
+	DWORD processAffinityMask = 0x00000001;
+
+	// Set the thread priority
+	if (!SetThreadPriority(hThread, threadPriority))
+	{
+		printf("%s: Failed to set thread priority. Error code: %d\n", MYNAME, GetLastError());
+	}
+
+	// Set the process affinity mask
+	if (!SetProcessAffinityMask(hProcess, processAffinityMask))
+	{
+		printf("%s: Failed to set process affinity mask. Error code: %d\n", MYNAME, GetLastError());
+	}
 	/*
 		15
 		THREAD_PRIORITY_TIME_CRITICAL, Base priority of 15 for IDLE_PRIORITY_CLASS, BELOW_NORMAL_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS, ABOVE_NORMAL_PRIORITY_CLASS, or HIGH_PRIORITY_CLASS processes, and a base priority of 31 for REALTIME_PRIORITY_CLASS processes.
@@ -80,7 +94,7 @@ int main()
 		THREAD_PRIORITY_IDLE, Base priority of 1 for IDLE_PRIORITY_CLASS, BELOW_NORMAL_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS, ABOVE_NORMAL_PRIORITY_CLASS, or HIGH_PRIORITY_CLASS processes, and a base priority of 16 for REALTIME_PRIORITY_CLASS processes.
 	*/
 
-	...
+	
 	/*
 		The SetProcessAffinityMask is inherted to any child process (and threads).
 		The SetThreadAffinityMask in threads will be overwritten by this call
@@ -95,14 +109,14 @@ int main()
 	*/
 
 	//get info
-	int processid = ...
-	int threadid = ...
-	int processornum = ...
-	DWORD ppriority = ...
-	int tpriority = ...
+	int processid = GetCurrentProcessId();
+	int threadid = GetCurrentThreadId();
+	int processornum = GetCurrentProcessorNumber();
+	DWORD ppriority = GetPriorityClass(hProcess);
+	int tpriority = GetThreadPriority(hThread);
 
-	std::cout << "Process ID: " << ... << "\nThread ID: " << ... << "\nNow running on processor #" << ...
-	<< "\nWith process priority class 0x" << std::hex << ... << "\nWith thread priority " << ... << std::dec << std::endl;
+	std::cout << "Process ID: " << processid << "\nThread ID: " << threadid << "\nNow running on processor #" << processornum
+	<< "\nWith process priority class 0x" << std::hex << ppriority << "\nWith thread priority " << tpriority << std::dec << std::endl;
 
 
 	DWORD dwEvent;
